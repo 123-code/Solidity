@@ -1,6 +1,6 @@
 pragma solidity^0.5.1;
 
-contract SimpleCoin{
+contract SimpleCoin is Ownable{
     // getting each users balance in wei.
 
 address public Owner;
