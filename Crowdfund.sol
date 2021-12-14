@@ -1,155 +1,79 @@
-pragma solidity ^0.4.24;
+pragma solidity ^ 0.8.4;
 
-import "./Listing6_3_ReleasableSimpleCoin.sol";
-import "./Listing6_4_Ownable.sol";
+import "SimpleCoin1.sol";
+import "ReleasableSimpleCoin";
 
-contract SimpleCrowdsale is Ownable {
-    uint256 public startTime;
-    uint256 public endTime; 
-    uint256 public weiTokenPrice;
-    uint256 public weiInvestmentObjective;
-       
-    mapping (address => uint256) public investmentAmountOf;
-    uint256 public investmentReceived;
-    uint256 public investmentRefunded;
-    
-    bool public isFinalized;
-    bool public isRefundingAllowed; 
+contract Crowdsale{
+    uint public starttime;
+    uint public endtime;
+    uint public currentwprice;
+    uint public objectivewprice;
 
-    ReleasableSimpleCoin public crowdsaleToken; 
-    
-    constructor(uint256 _startTime, uint256 _endTime, 
-      uint256 _weiTokenPrice, 
-      uint256 _weiInvestmentObjective) 
-      payable public
-    {
-        require(_startTime >= now);
-        require(_endTime >= _startTime);
-        require(_weiTokenPrice != 0);
-        require(_weiInvestmentObjective != 0);
-        
-        startTime = _startTime;
-        endTime = _endTime;
 
-        weiTokenPrice = _weiTokenPrice;
-        weiInvestmentObjective = _weiInvestmentObjective;
-    
-        crowdsaleToken = new ReleasableSimpleCoin(0);
-        isFinalized = false;
-    } 
-    
-    event LogInvestment(address indexed investor, uint256 value);
-    event LogTokenAssignment(address indexed investor, uint256 numTokens);
-    event Refund(address investor, uint256 value);
-    
-    function invest() public payable {
-        require(isValidInvestment(msg.value)); 
-        
-        address investor = msg.sender;
-        uint256 investment = msg.value;
-        
-        investmentAmountOf[investor] += investment; 
-        investmentReceived += investment; 
-        
-        assignTokens(investor, investment);
-        emit LogInvestment(investor, investment);      
-    }
+mapping(address => uint) public invested;
 
-    function isValidInvestment(uint256 _investment) 
-        internal view returns (bool) {
-        bool nonZeroInvestment = _investment != 0;
-        bool withinCrowdsalePeriod = now >= startTime && now <= endTime; 
-        
-        return nonZeroInvestment && withinCrowdsalePeriod;
+bool public finalized;
+bool public refundable;
+
+uint public TotalInvested;
+
+ReleasableSimpleCoin public token;
+
+
+constructor(uint _starttime,uint _endtime,uint _currentwprice,uint _objectivewprice){
+    require(_starttime >= block.timestamp );
+    require(_endtime > _starttime);
+    require(_currentwprice != 0);
+    require(_objectivewprice != 0 && _objectivewprice>_currentwprice);
+
+    starttime = _starttime;
+    endtime = _endtime;
+    token = new ReleasableSimpleCoin(0);
+
+}
+
+
+// function Handling Investments.
+
+function invest()public payable {
+address investor = msg.sender;
+uint investment = msg.value;
+
+invested[investor] += investment;
+TotalInvested += investment;
+
+}
+
+// function checking investment is valid 
+function isvalid(uint _investment)public view returns(bool){
+bool nonzero = _investment!=0;
+bool inperiod = block.timestamp>=starttime && block.timestamp<=endtime;
+
+return nonzero && inperiod;
+
+/* if(nonzero && inperiod == true){
+  return true;}
+  
+  else{
+      return false;
+
     }
     
-    function assignTokens(address _beneficiary, 
-        uint256 _investment) internal {
-    
-        uint256 _numberOfTokens = calculateNumberOfTokens(_investment); 
-        
-        crowdsaleToken.mint(_beneficiary, _numberOfTokens);
-    }
-    
-    struct Tranche{
-        uint256 highlimit;
-        uint256 tprice;
-        
-    }
-    
-    
-    
-    mapping(uint256 => Tranche)public trancheStructure;
-    
-    trancheStructure[0] = Tranche(300 ether,0.02);
-    trancheStructure[1] = Tranche(500,0.03);
-    trancheStructure[2] = Tranche(1500,0.04);
-    trancheStructure[3] = Tranche(1000000000,0.05);
-    
-    
-    uint currentTranchlevel;
-    
-    
-    function calculateNumberOfTokens(uint256 _investment) 
-        internal returns (uint256) {
-            
-        return _investment / weiTokenPrice; 
-        
-        }
-        
-    function update()internal{
-        uint i = currentTranchel;
-        
-        while(trancheStructure[i].highlimit < investmentReceived){
-            i++;
-        }
-        
-        currentTranchel = i;
-        
-        
-    weiTokenPrice = trancheStructure[currentTranchel].weiTokenPrice;
-    }    
-        
-       /* mapping(uint => uint)prices;
-        int tranch = 1;
-        int price = 2000;
-      */  
-    /*for(i=0;i>4;i++){
-        prices[i] = price;
-        price+=2000;
-        
-   */ 
-   
+    */
+}
+function assigntokens(uint _investment,address _beneficiary)public{
+uint ntokens = calculatentokens(_investment);
+token.mint(ntokens,_beneficiary);
+}
 
-    
-    function finalize() onlyOwner public {
-        if (isFinalized) revert();
-    
-        bool isCrowdsaleComplete = now > endTime; 
-        bool investmentObjectiveMet = investmentReceived >= weiInvestmentObjective;
-            
-        if (isCrowdsaleComplete)
-        {     
-            if (investmentObjectiveMet)
 
-                crowdsaleToken.release();
-            else 
-                isRefundingAllowed = true;
-    
-            isFinalized = true;
-        }               
-    }
-    
-    function refund() public {
-        if (!isRefundingAllowed) revert();
-    
-        address investor = msg.sender;
-        uint256 investment = investmentAmountOf[investor];
-        if (investment == 0) revert();
-        investmentAmountOf[investor] = 0;
-        investmentRefunded += investment;
-        emit Refund(msg.sender, investment);
+function calculatentokens(uint _investment)public view returns(uint){
+ return _investment / currentwprice;
+}
 
-        if (!investor.send(investment)) revert();
-    }    
+function finalize() OnlyOwner public {
+    if(finalized) revert();
+
+}
+
 }
