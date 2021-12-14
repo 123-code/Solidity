@@ -1,25 +1,28 @@
-pragma solidity ^ 0.4.24;
-import "Simple_Coin.sol";
-contract RSimpleCoin is Simple_Coin{
-bool public paused = false;
+pragma solidity ^ 0.8.4;
 
-modifier whenpaused(){
-    require(paused);
+import "SimpleCoin1";
+
+contract ReleasableSimpleCoin is SimpleCoin1{
+bool public  released = false;
+
+modifier Released(){
+    if(!released){
+        revert();
+    }
     _;
 }
 
-modifier notpaused(){
-    require(!paused);
-    _;
+function release() onlyOwner public {
+released = true;
 }
 
-function pause() notpaused public{
-    paused = true;
-
+function Transfer(address _to,uint _amount) Released public {
+super.transfer(_to,_amount);
 }
 
-function unpause() whenpaused public{
-    paused = false;
+function transferfrom(address from,address to,uint amount) Released public{
+    super.transfer(from,to,amount);
+    
 }
 
 
