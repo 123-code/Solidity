@@ -1,2 +1,14 @@
+<<<<<<< HEAD
 /node_modules
 
+=======
+node_modules
+.env
+coverage
+coverage.json
+typechain
+
+#Hardhat files
+cache
+artifacts
+>>>>>>> 267f9e86c38239712e24bda8d657eeed0d716a29

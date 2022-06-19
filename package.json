@@ -1,6 +1,10 @@
 {
+<<<<<<< HEAD
   "name": "hardhat-project",
   "devDependencies": {
     "hardhat": "^2.9.3"
   }
+=======
+  "name": "hardhat-project"
+>>>>>>> 267f9e86c38239712e24bda8d657eeed0d716a29
 }
