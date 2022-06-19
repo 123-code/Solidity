@@ -20,8 +20,15 @@ struct Employer{
     uint time_hours;
 }
 
+//struct below represents payment states success/fail.
+
+struct Payment{
+    bool successful;
+}
+
 Employer emp;
 Worker wor;
+Payment payment;
 uint time = block.timestamp;
 
 
@@ -35,17 +42,37 @@ modifier requireemployer(address empacc){
     _;
 }
 
+modifier requirepayagreement(uint amount){
+    require(wor.amount == emp.amount,"Agreement hasnt been reached");
+    _;
+}
+
 
 function payemployee(address payable account)public payable requireemployer(account){
     uint curr_time = block.timestamp;
     uint hour = (curr_time/3600);
     uint hours_worked = wor.time_hours;
+    
 
-for(uint i=0;i<hours_worked;i++){
-emp.acc.transfer(wor.amount);
+if(curr_time - curr_time == hour && hours_worked <= 8 ){
+    // means a legal working hour has passed
+    streampayments(hours_worked);
+    payment.successful = true;
+
+
+}
+else{
+payment.successful = false;
 }
 
-    
+}
+
+function streampayments(uint time_hours)public payable{
+    // calculates hourly payment & pays after hour has passed.
+    for(uint i=0;i<time_hours;i++){
+        emp.acc.transfer(wor.amount);
+    }
+
 
 }
 
@@ -59,7 +86,7 @@ function gethour()public view returns (uint){
 
 
 
-function setinfo(address payable _acc, uint _amount, string memory  _name, uint _time_hours)public{
+function setinfo(address payable _acc, uint _amount, string memory  _name, uint _time_hours)public requirepayagreement(_amount){
        emp =  Employer({
         amount:_amount,
         acc: _acc,
@@ -76,6 +103,16 @@ function setinfo(address payable _acc, uint _amount, string memory  _name, uint 
 
 }
 
+// checks if both parts have reached an agreement. 
+function agreementreached() public view returns(bool){
+    bool agreed;
+    if(wor.amount==emp.amount){
+agreed = true;
+    }
+    agreed=false;
+return agreed;
+}
+
 function getinfo()public pure returns (Employer memory employ, Worker memory work){
     return (employ, work);
 }
@@ -85,11 +122,11 @@ mapping(address=>bool) public hasaccepted;
 
 
 
-function acceptterms(address Account)public only_auth(Account){
+function acceptterms(address Account)public{
     hasaccepted[Account] = true;
 
 }
 
 
 
-}
+} 
