@@ -1,10 +1,11 @@
 {
-<<<<<<< HEAD
   "name": "hardhat-project",
   "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.2",
+    "ethereum-waffle": "^3.4.4",
     "hardhat": "^2.9.3"
+  },
+  "dependencies": {
+    "@nomiclabs/hardhat-waffle": "^2.0.3"
   }
-=======
-  "name": "hardhat-project"
->>>>>>> 267f9e86c38239712e24bda8d657eeed0d716a29
 }

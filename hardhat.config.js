@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 require("@nomiclabs/hardhat-waffle");
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -15,7 +13,6 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
->>>>>>> 267f9e86c38239712e24bda8d657eeed0d716a29
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
